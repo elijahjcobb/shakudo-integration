@@ -22,32 +22,16 @@ public final class BlockloyConnector {
 
 	private void sendErrorToPipe(String message) {
 		System.err.println(message);
-	}
-
-	private void sendCommandToPipe(String command, String parameter) {
-		System.out.printf("{\"cmd\":\"%s\",\"param\":\"%s\"}", command, parameter);
+		System.exit(1);
 	}
 
 	private File getFile(String[] args) {
 
-		if (args.length < 1) {
-			sendErrorToPipe("Path to source file was not provided.");
-			System.exit(1);
-		}
-
+		if (args.length < 1) sendErrorToPipe("Path to source file was not provided.");
 		String sourceFilePath = args[0];
-
-		if (sourceFilePath.isEmpty()) {
-			sendErrorToPipe("Path to source file was empty.");
-			System.exit(1);
-		}
-
+		if (sourceFilePath.isEmpty()) sendErrorToPipe("Path to source file was empty.");
 		File sourceFile = new File(sourceFilePath);
-
-		if (!sourceFile.exists()) {
-			sendErrorToPipe("Path did not resolve to file.");
-			System.exit(1);
-		}
+		if (!sourceFile.exists()) sendErrorToPipe("Path did not resolve to file.");
 
 		return sourceFile;
 
@@ -69,6 +53,8 @@ public final class BlockloyConnector {
 		A4Options options = new A4Options();
 		options.solver = A4Options.SatSolver.SAT4J;
 
+		boolean satisfied = false;
+
 		for (Command command: world.getAllCommands()) {
 
 			A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, options);
@@ -76,13 +62,16 @@ public final class BlockloyConnector {
 			if (ans.satisfiable()) {
 
 				String outFilePath = getTempFileLocation();
-				sendCommandToPipe("analysisFilePath", outFilePath);
 				ans.writeXML(outFilePath);
 				new VizGUI(false, outFilePath, null);
 
-			} else sendErrorToPipe("Model was not satisfiable.");
+				satisfied = true;
+
+			}
 
 		}
+
+		if (!satisfied) sendErrorToPipe("Model was not satisfiable.");
 
 	}
 
