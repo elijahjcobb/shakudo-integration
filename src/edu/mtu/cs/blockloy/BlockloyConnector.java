@@ -8,6 +8,7 @@ package edu.mtu.cs.blockloy;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
+import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4compiler.ast.Command;
 import edu.mit.csail.sdg.alloy4compiler.ast.Module;
 import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil;
@@ -23,6 +24,11 @@ public final class BlockloyConnector {
 	private void sendErrorToPipe(String message) {
 		System.err.println(message);
 		System.exit(1);
+	}
+
+	private void sendCompileErrorToPipe(String message, Pos position) {
+		System.out.printf("{\"msg\":\"%s\",\"x1\":%d,\"x2\":%d,\"y1\":%d,\"y2\":%d}", message.replaceAll("\n", " ").trim(), position.x, position.x2, position.y, position.y2);
+		System.exit(2);
 	}
 
 	private File getFile(String[] args) {
@@ -48,7 +54,14 @@ public final class BlockloyConnector {
 		};
 
 		String absoluteFilePath = sourceFile.getAbsolutePath();
-		Module world = CompUtil.parseEverything_fromFile(rep, null, absoluteFilePath);
+		Module world;
+
+		try {
+			world = CompUtil.parseEverything_fromFile(rep, null, absoluteFilePath);
+		} catch (Err e) {
+			this.sendCompileErrorToPipe(e.msg, e.pos);
+			return;
+		}
 
 		A4Options options = new A4Options();
 		options.solver = A4Options.SatSolver.SAT4J;
