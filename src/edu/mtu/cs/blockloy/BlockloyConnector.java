@@ -26,14 +26,17 @@ import java.io.StringWriter;
 
 public final class BlockloyConnector {
 
-	private void sendErrorToPipe(String message) {
+	private void sendErrorToPipe(String message, int retCode) {
 		System.err.println(message);
-		System.exit(1);
+		System.exit(retCode);
+	}
+	private void sendErrorToPipe(String message) {
+		sendErrorToPipe(message, 1);
 	}
 
-	private void sendCompileErrorToPipe(String message, Pos position) {
+	private void sendCompileErrorToPipe(String message, Pos position, int retCode) {
 		System.out.printf("{\"msg\":\"%s\",\"x1\":%d,\"x2\":%d,\"y1\":%d,\"y2\":%d}", message.replaceAll("\n", " ").trim(), position.x, position.x2, position.y, position.y2);
-		System.exit(2);
+		System.exit(retCode);
 	}
 
 	private File getFile(String[] args) {
@@ -64,7 +67,7 @@ public final class BlockloyConnector {
 		try {
 			world = CompUtil.parseEverything_fromFile(rep, null, absoluteFilePath);
 		} catch (Err e) {
-			this.sendCompileErrorToPipe(e.msg, e.pos);
+			this.sendCompileErrorToPipe(e.msg, e.pos, 2);
 			return;
 		}
 
@@ -131,7 +134,10 @@ public final class BlockloyConnector {
 
 		}
 
-		if (!satisfied) sendErrorToPipe("Model was not satisfiable.");
+		if (!satisfied) {
+			System.exit(7);
+			//sendErrorToPipe("Model was not satisfiable.", 7);
+		}
 
 	}
 
