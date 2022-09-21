@@ -18,6 +18,11 @@ import edu.mit.csail.sdg.alloy4compiler.translator.TranslateAlloyToKodkod;
 import edu.mit.csail.sdg.alloy4viz.VizGUI;
 import edu.mit.csail.sdg.alloy4.Computer;
 
+import javax.swing.SwingUtilities;
+import javax.swing.JSplitPane;
+import javax.swing.WindowConstants;
+import javax.swing.JFrame;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -129,6 +134,11 @@ public final class BlockloyConnector {
 				enumerator.setViz(viz);
 				evaluator.setViz(viz);
 				satisfied = true;
+
+				JSplitPane jpanel = viz.getPanel();
+				JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(jpanel);
+				topFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
 				//for(A4Solution ayn = ans; ayn.satisfiable(); ayn = ayn.next()) {}
 			}
 
